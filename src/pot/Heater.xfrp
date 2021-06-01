@@ -1,0 +1,15 @@
+use Potlib
+
+public module Heater {
+  in setting : Mode,
+     thermistor : Int
+  out heater : Bool
+  
+  node t(0) = thermistor
+  node dt = t - t@last
+  node tg = mtot(setting)
+  
+  out node heater = if thermistor < tg then
+                      True
+                    else False
+}

@@ -1,0 +1,64 @@
+use Potlib, BuzzerOneC, BuzzerOneD, BuzzerThree
+
+public switchmodule Timer {
+  in timerButton : Bool,
+     closed : Bool,
+     dt : Int
+  out time(Time(0,0)) : Time,
+      buzzerT : Bool
+  init Stop
+                   
+  state Stop {
+    node waitInput(0) = if timerButton then 
+                          waitInput@last + dt
+                        else 0
+    node endInput(0) = if !timerButton && !end then 
+                         endInput@last + dt
+                       else 0
+    node start = !timerButton && (waitInput@last >= 100) && closed
+    newnode out buzzerT, end = BuzzerOneC <- start, dt
+    out node time = if end && closed then
+                      incMinute(time@last)
+                    else Retain
+    
+    switch:
+      if endInput >= 1000 && displayTime(time) != 0 then
+        Run
+      else Retain   
+  }
+  
+  state Run {
+    node waitInput(0) = if timerButton then 
+                          waitInput@last + dt
+                        else 0
+    node startA = !timerButton && (waitInput@last >= 100) && closed
+    newnode buzzerTA, endA = BuzzerOneC <- startA, dt
+    
+    node counter(0) =
+      (counter@last + dt) % 1000
+    
+    node pulse =
+      counter@last > counter
+      
+    node resetInput(0) = if timerButton then
+                           resetInput@last + dt
+                         else 0
+    node startB = !timerButton && resetInput@last >= 3000
+    newnode buzzerTB, endB = BuzzerOneD <- startB, dt
+    node startC = displayTime(time) == 0
+    newnode buzzerTC, endC = BuzzerThree <- startC, dt
+    
+    out node time = if endB then Time(0,0)
+                    else if endA && closed && resetInput@last < 3000 then
+                      incMinute(time@last)
+                    else if pulse then
+                      decSecond(time@last)
+                    else Retain
+    
+    out node buzzerT = buzzerTA || buzzerTB || buzzerTC
+                               
+    switch: if endB || endC then
+              Stop
+            else Retain          
+  }
+}

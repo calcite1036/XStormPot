@@ -1,0 +1,34 @@
+use Pot, Potlib, Cover, Lock, Setting, Timer, Water
+
+module Main {
+  in pressedA : Bool,
+     pressedB : Bool,
+     pressedC : Bool,
+     elapsed(0) : Int
+  out heater : Bool,
+      battery : Bool,
+      time : Int,
+      temperature : Int,
+      boillamp : Bool,
+      keeplamp : Bool,
+      locklamp(False) : Bool,
+      mode : Int,
+      buzzer : Bool,
+      water  : Int,
+      supply  : Bool,
+      test : Bool
+      
+  node dt = elapsed - elapsed@last
+  
+  newnode closed = Cover <- True, dt
+  newnode timer, buzzerT = Timer <- pressedA, closed, dt
+  newnode keeptemp, buzzerS = Setting <- pressedB, closed, dt
+  newnode out water = Water <- False, True, True, False, False, closed
+  newnode out heater, out battery, out temperature, out boillamp, out keeplamp, out supply, buzzerP = Pot <- True, closed, water, 100, locklamp, False, pressedC, keeptemp, dt
+  newnode out locklamp = Lock <- False, closed, supply@last, dt
+  
+  out node time = displayTime(timer)
+  out node mode = mtoi(keeptemp)
+  out node test = pressedA
+  out node buzzer = buzzerT || buzzerS || buzzerP
+}

@@ -1,0 +1,14 @@
+use Potlib
+
+public module Boiled {
+  in thermistor : Int,
+     dt : Int
+  out boiled : Bool
+  
+  node reached(False) = if thermistor >= 100 then True else Retain
+  node wait(0) = if reached then wait@last + dt else Retain
+  
+  out node boiled = if wait >= 180000 then
+                      True
+                    else False
+}

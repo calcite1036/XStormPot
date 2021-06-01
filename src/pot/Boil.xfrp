@@ -1,0 +1,14 @@
+use Potlib, BuzzerOne
+
+public module Boil {
+  in boilButton : Bool,
+     dt : Int
+  out boil : Bool,
+      buzzerP :Bool
+  
+  node wait(0) = if boilButton then
+                   wait@last + dt
+                 else 0
+  node start = !boilButton && wait@last >= 100
+  newnode out buzzerP, out boil = BuzzerOne <- start, dt
+}

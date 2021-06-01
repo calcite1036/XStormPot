@@ -1,0 +1,52 @@
+use Potlib, BuzzerOneB
+
+public switchmodule Setting {
+  in settingButton : Bool,
+     closed : Bool,
+     dt : Int
+  out setting(High) : Mode,
+      buzzerS : Bool
+  init HighMode
+  
+  state HighMode {
+    out node setting = High
+    node wait(0) = if settingButton then
+                     wait@last + dt 
+                   else 0
+    node start = wait@last >= 100 && !settingButton && closed
+    newnode out buzzerS, end = BuzzerOneB <- start, dt 
+    
+    switch:
+      if end && closed then
+        SaveMode
+      else Retain
+  }
+  
+  state SaveMode {
+    out node setting = Save
+    node wait(0) = if settingButton then
+                     wait@last + dt 
+                   else 0
+    node start = wait@last >= 100 && !settingButton && closed
+    newnode out buzzerS, end = BuzzerOneB <- start, dt 
+    
+    switch:
+      if end && closed then
+        MilkMode
+      else Retain
+  }
+  
+  state MilkMode {
+    out node setting = Milk
+    node wait(0) = if settingButton then
+                     wait@last + dt 
+                   else 0
+    node start = wait@last >= 100 && !settingButton && closed
+    newnode out buzzerS, end = BuzzerOneB <- start, dt 
+    
+    switch:
+      if end && closed then
+        HighMode
+      else Retain
+  }
+}

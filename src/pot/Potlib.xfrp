@@ -1,0 +1,30 @@
+public type Time = Time of (Int, Int)
+public type Mode = High | Save | Milk
+
+public fun decSecond(time : Time) =
+  case time of
+    Time(0,0) -> Time(0,0);
+    Time(m,0) -> Time(m-1,59);
+    Time(m,s) -> Time(m,s-1);
+    
+public fun incMinute(time : Time) =
+  case time of
+    Time(60,0) -> Time(1,0);
+    Time(m,_) -> Time(m+1,0);
+    
+public fun displayTime(time : Time) =
+  case time of
+    Time(m,0) -> m;
+    Time(m,_) -> m+1;
+    
+public fun mtot(mode : Mode) =
+  case mode of
+    High -> 98;
+    Save -> 90;
+    Milk -> 60;
+    
+public fun mtoi(mode : Mode) =
+  case mode of
+    High -> 1;
+    Save -> 2;
+    Milk -> 3;
